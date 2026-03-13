@@ -10,37 +10,50 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build ${{ matrix.asset_name }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - target: x86_64-unknown-linux-gnu
+          - goos: linux
+            goarch: amd64
             asset_name: pocketmcp
-          - target: x86_64-apple-darwin
+            runs_on: ubuntu-latest
+          - goos: darwin
+            goarch: amd64
             asset_name: pocketmcp-macos
-          - target: x86_64-pc-windows-msvc
+            runs_on: ubuntu-latest
+          - goos: windows
+            goarch: amd64
             asset_name: pocketmcp.exe
+            runs_on: ubuntu-latest
+    runs-on: ${{ matrix.runs_on }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
-          deno-version: v2.x
+          go-version-file: go.mod
+          cache: true
 
       - name: Build binary
         env:
-          TARGET: ${{ matrix.target }}
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
           ASSET_NAME: ${{ matrix.asset_name }}
+          VERSION: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+          BUILD_DATE: ${{ github.event.head_commit.timestamp }}
         run: |
           mkdir -p dist
-          deno compile -A \
-            --target "${TARGET}" \
-            --output "dist/${ASSET_NAME}" \
-            src/cli.ts
+          go build \
+            -trimpath \
+            -ldflags "-s -w -X github.com/mreyeswilson/pocketmcp/cmd/pocketmcp.version=${VERSION} -X github.com/mreyeswilson/pocketmcp/cmd/pocketmcp.commit=${COMMIT} -X github.com/mreyeswilson/pocketmcp/cmd/pocketmcp.date=${BUILD_DATE}" \
+            -o "dist/${ASSET_NAME}" \
+            .
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

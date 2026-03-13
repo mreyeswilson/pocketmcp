@@ -128,6 +128,6 @@ Move-Item -Force -Path $TempFile -Destination $Destination
 Write-Host "Installed $BinaryFileName $Tag to $Destination"
 Write-Host "Next steps:"
 Write-Host "  1) Add $InstallDir to your PATH if needed"
-Write-Host "  2) Run: $BinaryFileName serve --url <url> --email <email> --password <password>"
-Write-Host "  3) Or run: $BinaryFileName install --client all --url <url> --email <email> --password <password>"
+Write-Host "  2) Run: $BinaryFileName mcp --url <url> --email <email> --password <password>"
+Write-Host "  3) Or run: $BinaryFileName setup --client all --url <url> --email <email> --password <password>"
 Write-Host "Version selection: latest by default; set VERSION (or MCP_PB_VERSION) or pass -Version <tag>."
