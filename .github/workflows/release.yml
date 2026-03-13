@@ -41,7 +41,7 @@ jobs:
           EXT: ${{ matrix.ext }}
         run: |
           mkdir -p dist
-          ASSET_NAME="mcp-pocketbase-admin-${TAG}-${TARGET}${EXT}"
+          ASSET_NAME="pocketmcp-${TARGET}${EXT}"
           deno compile \
             --allow-env \
             --allow-net \
