@@ -1,17 +1,24 @@
 # PocketMCP CLI (Deno)
 
-CLI para ejecutar un servidor MCP sobre `stdio` para PocketBase y para instalar/desinstalar su configuracion en clientes MCP.
+<p align="center">
+  <img src="docs/logo.png" alt="PocketMCP logo" width="140">
+</p>
 
-La UX del CLI usa `commander` (comandos/flags/help) y `ora` (spinners de progreso en pasos clave, con comportamiento seguro en modo no interactivo).
+CLI para correr un servidor MCP sobre `stdio` para PocketBase y para instalar/desinstalar su configuracion en clientes MCP.
 
-Comandos principales del binario:
+## Instalacion (binario precompilado)
 
-- `serve` -> inicia el servidor MCP.
-- `install` -> instala/desinstala la entrada MCP en clientes (`claude-desktop`, `cursor`, `vscode`, `windsurf`).
+Los instaladores publicos son solo estos dos:
 
-## Instalacion rapida
+- Linux/macOS: `install.sh`
+- Windows: `install.ps1`
 
-Reemplaza `mreyeswilson/pocketmcp` si usas un fork propio:
+Nombres finales de binario instalado:
+
+- Linux/macOS: `pocketmcp`
+- Windows: `pocketmcp.exe`
+
+### 1) Instalar ultima version disponible (latest)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install.sh | bash
@@ -21,29 +28,50 @@ curl -fsSL https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install
 powershell -c "irm https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install.ps1 | iex"
 ```
 
-## Requisitos (desarrollo)
+### 2) Fijar version manual (opcional)
 
-- Deno 2.x
-- Instancia de PocketBase accesible por URL
-- Credenciales de admin/superuser
-
-## Uso CLI
+Si necesitas una version puntual, define `VERSION` antes de ejecutar el instalador.
+Tambien se mantiene compatibilidad con `MCP_PB_VERSION`.
 
 ```bash
-deno run -A src/cli.ts <command> [flags]
+curl -fsSL https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install.sh | VERSION=v0.0.4 bash
 ```
 
-Tambien puedes ver ayuda estructurada por comando:
+```powershell
+$env:VERSION = "v0.0.4"; powershell -c "irm https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install.ps1 | iex"
+```
+
+Opcionalmente, en Windows tambien puedes invocar el script local con parametro:
+
+```powershell
+.\install.ps1 -Version v0.0.4
+```
+
+## Uso rapido
+
+1. Levanta el servidor MCP:
 
 ```bash
-deno run -A src/cli.ts --help
-deno run -A src/cli.ts serve --help
-deno run -A src/cli.ts install --help
+pocketmcp serve --url http://127.0.0.1:8090 --email admin@example.com --password 'tu_password'
 ```
+
+En Windows, el ejecutable instalado es `pocketmcp.exe`.
+
+2. Instala configuracion MCP en tus clientes:
+
+```bash
+pocketmcp install --client all --url http://127.0.0.1:8090 --email admin@example.com --password 'tu_password'
+```
+
+3. Desinstala configuracion MCP:
+
+```bash
+pocketmcp install --uninstall --client all
+```
+
+## Flags principales
 
 ### `serve`
-
-Flags:
 
 - `--url`
 - `--email` (alias: `--user`)
@@ -57,15 +85,7 @@ Fallback por variables de entorno:
 - `POCKETBASE_PASSWORD`
 - `REQUEST_TIMEOUT_MS`
 
-Ejemplo:
-
-```bash
-deno task start -- --url http://127.0.0.1:8090 --email admin@example.com --password 'tu_password'
-```
-
 ### `install`
-
-Flags:
 
 - `--client <all|claude-desktop|cursor|vscode|windsurf>`
 - `--uninstall`
@@ -78,25 +98,21 @@ Notas:
 - En modo uninstall no hacen falta credenciales.
 - El password se enmascara en logs.
 
-Instalar:
+## Requisitos (desarrollo)
+
+- Deno 2.x
+- Instancia de PocketBase accesible por URL
+- Credenciales de admin/superuser
+
+## Comandos de desarrollo
 
 ```bash
-deno task install -- --client all --url http://127.0.0.1:8090 --email admin@example.com --password 'tu_password'
+deno run -A src/cli.ts --help
+deno task dev
+deno task start
+deno task install -- --help
+deno task check
 ```
-
-Desinstalar:
-
-```bash
-deno task install -- --uninstall --client all
-```
-
-## Tareas Deno
-
-- `deno task dev` -> watch mode de `serve`
-- `deno task start` -> ejecuta `serve`
-- `deno task install` -> ejecuta subcomando `install`
-- `deno task cli --help` -> entrypoint unico del CLI (commander)
-- `deno task check` -> type check de CLI y modulos
 
 ## Compilar a binario
 
@@ -108,24 +124,9 @@ deno compile --allow-env --allow-net --allow-read --allow-write --output ./dist/
 
 Al pushear un tag `v*` (por ejemplo `v0.2.0`) se ejecuta `.github/workflows/release.yml` para:
 
-- Compilar binarios con `deno compile` para:
-  - `x86_64-unknown-linux-gnu`
-  - `x86_64-apple-darwin`
-  - `x86_64-pc-windows-msvc`
-- Publicar release con assets versionados por tag.
+- Compilar binarios para `x86_64-unknown-linux-gnu`, `x86_64-apple-darwin`, `x86_64-pc-windows-msvc`
+- Publicar release con assets versionados por tag
 
 ## Landing docs
 
-Landing simple disponible en:
-
-- `docs/index.html`
-
-Incluye instalacion one-liner y quick start de `serve`/`install`.
-
-La publicacion en GitHub Pages se hace con `.github/workflows/pages.yml` en cada push a `main` (y tambien por ejecucion manual de workflow).
-
-## Verificacion
-
-```bash
-deno task check
-```
+La landing esta en `docs/index.html` y se publica con `.github/workflows/pages.yml`.

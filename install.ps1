@@ -1,7 +1,20 @@
+param(
+  [string] $Version,
+  [string] $RepoOverride
+)
+
 $ErrorActionPreference = "Stop"
 
-$Repo = if ($env:MCP_PB_REPO) { $env:MCP_PB_REPO } else { "mreyeswilson/pocketmcp" }
-$BinaryName = "pocketmcp"
+$Repo = if ($RepoOverride) {
+  $RepoOverride
+} elseif ($env:MCP_PB_REPO) {
+  $env:MCP_PB_REPO
+} else {
+  "mreyeswilson/pocketmcp"
+}
+
+$BinaryBaseName = "pocketmcp"
+$BinaryFileName = "pocketmcp.exe"
 
 try {
   $tls12 = [Net.SecurityProtocolType]::Tls12
@@ -59,11 +72,35 @@ function Download-WithRetry {
   throw "Failed to download asset after $MaxAttempts attempts.`n$($lastErrors -join "`n")"
 }
 
-if ($env:MCP_PB_VERSION) {
+function Get-LatestTag {
+  param(
+    [Parameter(Mandatory = $true)] [string] $Repository
+  )
+
+  try {
+    $latestRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repository/releases/latest"
+    if ($latestRelease.tag_name) {
+      return $latestRelease.tag_name
+    }
+  } catch {
+  }
+
+  $latestTag = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repository/tags?per_page=1"
+  if ($latestTag -and $latestTag[0].name) {
+    return $latestTag[0].name
+  }
+
+  return $null
+}
+
+if ($Version) {
+  $Tag = $Version
+} elseif ($env:VERSION) {
+  $Tag = $env:VERSION
+} elseif ($env:MCP_PB_VERSION) {
   $Tag = $env:MCP_PB_VERSION
 } else {
-  $Latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
-  $Tag = $Latest.tag_name
+  $Tag = Get-LatestTag -Repository $Repo
 }
 
 if (-not $Tag) {
@@ -76,21 +113,22 @@ if ($Arch -notin @("AMD64", "x86_64")) {
 }
 
 $Target = "x86_64-pc-windows-msvc"
-$Asset = "$BinaryName-$Tag-$Target.exe"
+$Asset = "$BinaryBaseName-$Tag-$Target.exe"
 $Url = "https://github.com/$Repo/releases/download/$Tag/$Asset"
 
 $InstallDir = Join-Path $env:LOCALAPPDATA "pocketmcp\bin"
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 
-$Destination = Join-Path $InstallDir "$BinaryName.exe"
-$TempFile = Join-Path $env:TEMP ("$BinaryName-" + [Guid]::NewGuid().ToString() + ".exe")
+$Destination = Join-Path $InstallDir $BinaryFileName
+$TempFile = Join-Path $env:TEMP ("$BinaryBaseName-" + [Guid]::NewGuid().ToString() + ".exe")
 
 Write-Host "Downloading $Url"
 Download-WithRetry -Url $Url -OutFile $TempFile -MaxAttempts 3
 Move-Item -Force -Path $TempFile -Destination $Destination
 
-Write-Host "Installed $BinaryName $Tag to $Destination"
+Write-Host "Installed $BinaryFileName $Tag to $Destination"
 Write-Host "Next steps:"
 Write-Host "  1) Add $InstallDir to your PATH if needed"
-Write-Host "  2) Run: $BinaryName serve --url <url> --email <email> --password <password>"
-Write-Host "  3) Or run: $BinaryName install --client all --url <url> --email <email> --password <password>"
+Write-Host "  2) Run: $BinaryFileName serve --url <url> --email <email> --password <password>"
+Write-Host "  3) Or run: $BinaryFileName install --client all --url <url> --email <email> --password <password>"
+Write-Host "Version selection: latest by default; set VERSION (or MCP_PB_VERSION) or pass -Version <tag>."
