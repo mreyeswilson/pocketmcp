@@ -2,10 +2,9 @@ import { dirname, fromFileUrl, join } from "jsr:@std/path";
 import { createSpinner } from "./spinner.ts";
 
 const SERVER_NAME = "pocketbase-admin";
-const CLI_RELATIVE_PATH = "src/cli.ts";
 const DEFAULT_TIMEOUT_MS = 15000;
 
-type SupportedClient = "claude-desktop" | "cursor" | "vscode" | "windsurf";
+type SupportedClient = "claude-desktop" | "cursor" | "vscode" | "windsurf" | "opencode";
 
 type CliOptions = {
   client: "all" | SupportedClient;
@@ -90,7 +89,8 @@ function parseClient(raw: string): "all" | SupportedClient {
     client === "claude-desktop" ||
     client === "cursor" ||
     client === "vscode" ||
-    client === "windsurf"
+    client === "windsurf" ||
+    client === "opencode"
   ) {
     return client;
   }
@@ -292,8 +292,8 @@ async function buildInstallConfig(options: CliOptions): Promise<InstallConfig> {
   }
 
   return {
-    command: "deno",
-    args: ["run", "-A", join(repoRoot, CLI_RELATIVE_PATH), ...baseArgs],
+    command: Deno.build.os === "windows" ? "pocketmcp.exe" : "pocketmcp",
+    args: baseArgs,
   };
 }
 

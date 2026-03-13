@@ -1,10 +1,10 @@
-# PocketMCP CLI (Deno)
+# PocketMCP CLI
 
 <p align="center">
   <img src="docs/logo.png" alt="PocketMCP logo" width="140">
 </p>
 
-CLI para correr un servidor MCP sobre `stdio` para PocketBase y para instalar/desinstalar su configuracion en clientes MCP.
+CLI para correr un servidor MCP sobre `stdio` para PocketBase y para instalar/desinstalar su configuracion en clientes MCP. Tambien encaja de forma natural en OpenCode y otros clientes MCP que consumen un comando local.
 
 ## Instalacion (binario precompilado)
 
@@ -53,9 +53,42 @@ Opcionalmente, en Windows tambien puedes invocar el script local con parametro:
 .\install.ps1 -Version v0.0.4
 ```
 
+## Opciones de instalacion/configuracion MCP
+
+Despues de instalar el binario final, estas son las opciones accionables para conectarlo en clientes MCP:
+
+### 1) Clientes con instalacion automatica
+
+Usa `pocketmcp install` para escribir la configuracion generada en `Claude Desktop`, `Cursor`, `VS Code` o `Windsurf`.
+
+```bash
+pocketmcp install --client all --url http://127.0.0.1:8090 --email admin@example.com --password 'tu_password'
+```
+
+### 2) OpenCode
+
+Si usas OpenCode, configuralo con el binario final y `serve` + argumentos, igual que cualquier otro cliente MCP basado en comando local:
+
+```json
+{
+  "command": "pocketmcp",
+  "args": [
+    "serve",
+    "--url",
+    "http://127.0.0.1:8090",
+    "--email",
+    "admin@example.com",
+    "--password",
+    "tu_password"
+  ]
+}
+```
+
+En Windows, usa `pocketmcp.exe` como comando.
+
 ## Uso rapido
 
-1. Levanta el servidor MCP:
+1. Levanta el servidor MCP con el binario final y el subcomando `serve`:
 
 ```bash
 pocketmcp serve --url http://127.0.0.1:8090 --email admin@example.com --password 'tu_password'
@@ -63,7 +96,11 @@ pocketmcp serve --url http://127.0.0.1:8090 --email admin@example.com --password
 
 En Windows, el ejecutable instalado es `pocketmcp.exe`.
 
-2. Instala configuracion MCP en tus clientes:
+```powershell
+pocketmcp.exe serve --url http://127.0.0.1:8090 --email admin@example.com --password "tu_password"
+```
+
+2. Instala configuracion MCP generada en clientes compatibles:
 
 ```bash
 pocketmcp install --client all --url http://127.0.0.1:8090 --email admin@example.com --password 'tu_password'
@@ -111,6 +148,8 @@ Notas:
 - Credenciales de admin/superuser
 
 ## Comandos de desarrollo
+
+Estas instrucciones son solo para desarrollo interno del repo. El uso final para usuarios es siempre con el binario `pocketmcp`/`pocketmcp.exe` y el subcomando `serve`.
 
 ```bash
 deno run -A src/cli.ts --help

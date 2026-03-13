@@ -6,7 +6,7 @@
     <title>PocketMCP | PocketBase MCP, shipped fast</title>
     <meta
       name="description"
-      content="PocketMCP is the focused CLI to serve PocketBase MCP and install client config with clear, repeatable commands."
+      content="PocketMCP is the focused CLI to serve PocketBase MCP from a final binary, install client config, and fit cleanly into OpenCode or other MCP clients."
     >
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -95,7 +95,7 @@
               Run MCP in minutes, keep every client in sync.
             </h1>
             <p class="mt-5 max-w-xl text-base text-mist sm:text-[1.05rem]">
-              PocketMCP is the direct path to serve a PocketBase admin MCP endpoint over stdio and roll out config to your MCP clients with one clean install flow.
+              PocketMCP is the direct path to run a PocketBase admin MCP endpoint from the shipped binary, roll out client config, and plug the same command into OpenCode or other MCP clients.
             </p>
             <div class="mt-7 flex flex-wrap items-center gap-3">
               <a
@@ -114,19 +114,20 @@
              <div class="mt-7 flex flex-wrap gap-3 text-xs text-mist sm:text-sm">
                <span class="rounded-full border border-line bg-white/5 px-3 py-1">Cross-platform binaries</span>
                <span class="rounded-full border border-line bg-white/5 px-3 py-1">Single-purpose commands</span>
-               <span class="rounded-full border border-line bg-white/5 px-3 py-1">Fast team onboarding</span>
+                <span class="rounded-full border border-line bg-white/5 px-3 py-1">Fast team onboarding</span>
+                <span class="rounded-full border border-line bg-white/5 px-3 py-1">OpenCode-friendly</span>
              </div>
 
              <p class="mt-4 max-w-xl text-xs text-mist sm:text-sm">
-               Installers fetch the latest release by default. Set <code class="rounded bg-black/35 px-1 py-0.5">VERSION</code> to pin a specific tag.
+                Installers fetch the latest release by default. Set <code class="rounded bg-black/35 px-1 py-0.5">VERSION</code> to pin a specific tag, then run the installed binary with <code class="rounded bg-black/35 px-1 py-0.5">serve</code>.
              </p>
 
-             <div class="mt-6 max-w-xl rounded-xl border border-line bg-black/30 p-3 sm:p-4">
-               <p class="text-sm font-semibold text-slate-50">Install PocketMCP</p>
-               <p class="mt-1 text-xs text-mist">Installed binary names: <code class="rounded bg-black/35 px-1 py-0.5">pocketmcp</code> (Linux/macOS) and <code class="rounded bg-black/35 px-1 py-0.5">pocketmcp.exe</code> (Windows).</p>
-               <div
-                 class="mt-2 inline-flex rounded-full border border-line bg-white/5 p-1"
-                 role="tablist"
+              <div class="mt-6 max-w-3xl rounded-xl border border-line bg-black/30 p-3 sm:p-4">
+                <p class="text-sm font-semibold text-slate-50">Install PocketMCP</p>
+                <p class="mt-1 text-xs text-mist">Installed binary names: <code class="rounded bg-black/35 px-1 py-0.5">pocketmcp</code> (Linux/macOS) and <code class="rounded bg-black/35 px-1 py-0.5">pocketmcp.exe</code> (Windows).</p>
+                <div
+                  class="mt-2 inline-flex rounded-full border border-line bg-white/5 p-1"
+                  role="tablist"
                 aria-label="Install command by platform"
               >
                 <button
@@ -152,8 +153,8 @@
                   Windows
                 </button>
               </div>
-              <div class="mt-2">
-                <div class="relative">
+                <div class="mt-2">
+                  <div class="relative">
                   <button
                     type="button"
                     data-install-copy
@@ -169,7 +170,34 @@
                     <pre class="overflow-x-auto rounded-lg border border-glow/30 bg-black/50 px-3 py-2 pr-16 text-[0.82rem] leading-relaxed text-slate-100"><code>powershell -c "irm https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install.ps1 | iex"</code></pre>
                   </div>
                 </div>
-              </div>
+                <div class="mt-4 grid gap-3 lg:grid-cols-2">
+                  <article class="rounded-xl border border-line bg-black/25 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-ember">Client setup option</p>
+                    <h3 class="mt-2 font-display text-lg font-bold text-slate-50">Managed MCP clients</h3>
+                    <p class="mt-2 text-sm text-mist">Write generated config directly into Claude Desktop, Cursor, VS Code, or Windsurf with the installed binary.</p>
+                    <pre class="mt-3 overflow-x-auto rounded-lg border border-line bg-black/45 p-3 text-[0.8rem] leading-relaxed text-slate-100"><code>pocketmcp install --client all --url http://127.0.0.1:8090 --email admin@example.com --password 'your_password'</code></pre>
+                    <p class="mt-2 text-xs text-mist">Use <code class="rounded bg-black/35 px-1 py-0.5">pocketmcp.exe</code> on Windows.</p>
+                  </article>
+                  <article class="rounded-xl border border-line bg-black/25 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-glow">Client setup option</p>
+                    <h3 class="mt-2 font-display text-lg font-bold text-slate-50">OpenCode</h3>
+                    <p class="mt-2 text-sm text-mist">Configure OpenCode with the final binary and the same <code class="rounded bg-black/25 px-1 py-0.5">serve</code> arguments used everywhere else.</p>
+                    <pre class="mt-3 overflow-x-auto rounded-lg border border-line bg-black/45 p-3 text-[0.8rem] leading-relaxed text-slate-100"><code>{
+  "command": "pocketmcp",
+  "args": [
+    "serve",
+    "--url",
+    "http://127.0.0.1:8090",
+    "--email",
+    "admin@example.com",
+    "--password",
+    "your_password"
+  ]
+}</code></pre>
+                    <p class="mt-2 text-xs text-mist">On Windows, set <code class="rounded bg-black/35 px-1 py-0.5">command</code> to <code class="rounded bg-black/35 px-1 py-0.5">pocketmcp.exe</code>.</p>
+                  </article>
+                </div>
+             </div>
             </div>
           </div>
         </section>
@@ -177,7 +205,7 @@
         <section id="features" class="mt-14 grid gap-4 md:grid-cols-3">
           <article class="surface rounded-2xl border border-line p-5">
             <h2 class="font-display text-xl font-bold tracking-tight">Focused command surface</h2>
-            <p class="mt-3 text-sm text-mist">Use dedicated `serve` and `install` commands designed for predictable MCP setup instead of generic script sprawl.</p>
+            <p class="mt-3 text-sm text-mist">Use dedicated <code class="rounded bg-black/25 px-1 py-0.5">serve</code> and <code class="rounded bg-black/25 px-1 py-0.5">install</code> commands from the shipped binary instead of generic script sprawl.</p>
           </article>
           <article class="surface rounded-2xl border border-line p-5">
             <h2 class="font-display text-xl font-bold tracking-tight">Client config automation</h2>
@@ -200,12 +228,12 @@
             <div class="rounded-2xl border border-line bg-black/25 p-4">
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ember">02</p>
               <h3 class="mt-2 font-display text-lg font-bold">Run MCP server</h3>
-              <p class="mt-2 text-sm text-mist">Start an authenticated stdio MCP session against your PocketBase admin endpoint.</p>
+              <p class="mt-2 text-sm text-mist">Start an authenticated stdio MCP session against your PocketBase admin endpoint with <code class="rounded bg-black/25 px-1 py-0.5">pocketmcp serve ...</code>.</p>
             </div>
             <div class="rounded-2xl border border-line bg-black/25 p-4">
               <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ember">03</p>
               <h3 class="mt-2 font-display text-lg font-bold">Install client config</h3>
-              <p class="mt-2 text-sm text-mist">Apply generated settings for one or all supported clients to unify local tooling.</p>
+              <p class="mt-2 text-sm text-mist">Choose generated config for supported clients or wire the same binary into OpenCode manually.</p>
             </div>
           </div>
         </section>
@@ -225,13 +253,13 @@ pocketmcp install \
   --email admin@example.com \
   --password 'your_password'
 
-# Windows binary filename:
-pocketmcp.exe --help</code></pre>
+# OpenCode or Windows config uses the same pattern:
+pocketmcp.exe serve --url http://127.0.0.1:8090 --email admin@example.com --password 'your_password'</code></pre>
           </article>
           <article class="surface rounded-2xl border border-line p-5 sm:p-6">
             <h2 class="font-display text-2xl font-bold tracking-tight">When to use PocketMCP</h2>
             <ul class="mt-4 space-y-3 text-sm text-mist">
-              <li class="rounded-xl border border-line bg-black/25 p-3">You need a repeatable admin MCP setup for local automation.</li>
+              <li class="rounded-xl border border-line bg-black/25 p-3">You need a repeatable admin MCP setup for local automation or OpenCode.</li>
               <li class="rounded-xl border border-line bg-black/25 p-3">Your team wants one install flow for Linux, macOS, and Windows.</li>
               <li class="rounded-xl border border-line bg-black/25 p-3">You want release-tagged binaries for stable CI and onboarding docs.</li>
             </ul>
