@@ -10,6 +10,12 @@ import { createSpinner } from "./spinner.ts";
 
 type JsonObject = Record<string, unknown>;
 
+type ToolDefinition = {
+  name: string;
+  description: string;
+  inputSchema: JsonObject;
+};
+
 type StartupConfig = {
   url: string;
   email: string;
@@ -199,6 +205,108 @@ function asCollectionRef(args: JsonObject): string {
   throw new ToolInputError("Missing collection reference: provide 'id' or 'name'");
 }
 
+function validateToolInputSchemas(tools: ToolDefinition[]): void {
+  const forbiddenRootKeywords = ["oneOf", "anyOf", "allOf", "enum", "not"];
+
+  for (const tool of tools) {
+    const schema = tool.inputSchema;
+    if (!isObject(schema) || schema.type !== "object") {
+      throw new Error(`Invalid schema for tool '${tool.name}': top-level type must be 'object'`);
+    }
+
+    for (const keyword of forbiddenRootKeywords) {
+      if (keyword in schema) {
+        throw new Error(`Invalid schema for tool '${tool.name}': '${keyword}' is not allowed at schema root`);
+      }
+    }
+  }
+}
+
+export function buildToolDefinitions(): ToolDefinition[] {
+  return [
+    {
+      name: "get_collections",
+      description: "Lista todas las colecciones de PocketBase",
+      inputSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {},
+      },
+    },
+    {
+      name: "get_collection",
+      description: "Obtiene una coleccion por id o nombre",
+      inputSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          id: { type: "string", minLength: 1 },
+          name: { type: "string", minLength: 1 },
+        },
+      },
+    },
+    {
+      name: "create_collection",
+      description: "Crea una coleccion con payload JSON generico",
+      inputSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          collection: { type: "object", additionalProperties: true },
+        },
+        required: ["collection"],
+      },
+    },
+    {
+      name: "update_collection",
+      description: "Actualiza una coleccion por id o nombre",
+      inputSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          id: { type: "string", minLength: 1 },
+          name: { type: "string", minLength: 1 },
+          collection: { type: "object", additionalProperties: true },
+        },
+        required: ["collection"],
+      },
+    },
+    {
+      name: "delete_collection",
+      description: "Elimina una coleccion por id o nombre",
+      inputSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          id: { type: "string", minLength: 1 },
+          name: { type: "string", minLength: 1 },
+        },
+      },
+    },
+    {
+      name: "get_settings",
+      description: "Obtiene configuraciones globales de la instancia",
+      inputSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {},
+      },
+    },
+    {
+      name: "update_settings",
+      description: "Actualiza configuraciones globales con patch parcial",
+      inputSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          patch: { type: "object", additionalProperties: true },
+        },
+        required: ["patch"],
+      },
+    },
+  ];
+}
+
 function toErrorDetails(error: unknown): JsonObject {
   if (error instanceof ToolInputError) {
     return {
@@ -315,91 +423,8 @@ export async function runServe(args: string[]): Promise<void> {
     }
   }
 
-  const tools = [
-    {
-      name: "get_collections",
-      description: "Lista todas las colecciones de PocketBase",
-      inputSchema: {
-        type: "object",
-        additionalProperties: false,
-        properties: {},
-      },
-    },
-    {
-      name: "get_collection",
-      description: "Obtiene una coleccion por id o nombre",
-      inputSchema: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          id: { type: "string", minLength: 1 },
-          name: { type: "string", minLength: 1 },
-        },
-        anyOf: [{ required: ["id"] }, { required: ["name"] }],
-      },
-    },
-    {
-      name: "create_collection",
-      description: "Crea una coleccion con payload JSON generico",
-      inputSchema: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          collection: { type: "object", additionalProperties: true },
-        },
-        required: ["collection"],
-      },
-    },
-    {
-      name: "update_collection",
-      description: "Actualiza una coleccion por id o nombre",
-      inputSchema: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          id: { type: "string", minLength: 1 },
-          name: { type: "string", minLength: 1 },
-          collection: { type: "object", additionalProperties: true },
-        },
-        required: ["collection"],
-        anyOf: [{ required: ["id"] }, { required: ["name"] }],
-      },
-    },
-    {
-      name: "delete_collection",
-      description: "Elimina una coleccion por id o nombre",
-      inputSchema: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          id: { type: "string", minLength: 1 },
-          name: { type: "string", minLength: 1 },
-        },
-        anyOf: [{ required: ["id"] }, { required: ["name"] }],
-      },
-    },
-    {
-      name: "get_settings",
-      description: "Obtiene configuraciones globales de la instancia",
-      inputSchema: {
-        type: "object",
-        additionalProperties: false,
-        properties: {},
-      },
-    },
-    {
-      name: "update_settings",
-      description: "Actualiza configuraciones globales con patch parcial",
-      inputSchema: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          patch: { type: "object", additionalProperties: true },
-        },
-        required: ["patch"],
-      },
-    },
-  ];
+  const tools = buildToolDefinitions();
+  validateToolInputSchemas(tools);
 
   const server = new Server(
     {

@@ -112,6 +112,11 @@ pocketmcp install --client all --url http://127.0.0.1:8090 --email admin@example
 pocketmcp install --uninstall --client all
 ```
 
+## Contrato de herramientas MCP
+
+- Todos los `inputSchema` de herramientas MCP usan raiz `type: "object"` para compatibilidad con validadores estrictos.
+- En `get_collection`, `update_collection` y `delete_collection`, pasa exactamente uno entre `id` o `name`; la validacion de exclusividad se aplica en runtime.
+
 ## Flags principales
 
 ### `serve`
