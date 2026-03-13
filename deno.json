@@ -1,0 +1,16 @@
+{
+  "tasks": {
+    "cli": "deno run -A src/cli.ts",
+    "dev": "deno run --watch --allow-env --allow-net src/cli.ts serve",
+    "start": "deno run --allow-env --allow-net src/cli.ts serve",
+    "install": "deno run -A src/cli.ts install",
+    "check": "deno check src/cli.ts src/serve.ts src/install.ts src/spinner.ts src/main.ts"
+  },
+  "imports": {
+    "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.27.1",
+    "@std/path": "jsr:@std/path@^1.1.4",
+    "commander": "npm:commander@^14.0.3",
+    "ora": "npm:ora@^9.3.0",
+    "pocketbase": "npm:pocketbase@^0.26.8"
+  }
+}
