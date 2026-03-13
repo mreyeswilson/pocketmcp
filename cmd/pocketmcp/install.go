@@ -5,13 +5,13 @@ import (
 	"strings"
 
 	"github.com/mreyeswilson/pocketmcp/internal/config"
+	installer "github.com/mreyeswilson/pocketmcp/internal/install"
 	"github.com/spf13/cobra"
 )
 
 type installOptions struct {
 	Client    string
 	Uninstall bool
-	Binary    string
 	URL       string
 	Email     string
 	Password  string
@@ -23,54 +23,15 @@ func newSetupCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "setup",
-		Short: "Validate and prepare MCP client setup",
-		Long:  "Validate local MCP client installation parameters before writing client configuration.",
+		Short: "Install MCP client configuration",
+		Long:  "Write or remove MCP client configuration pointing at the global pocketmcp binary.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if !opts.Uninstall {
-				creds, err := promptPocketBaseCredentials(cmd, opts.URL, opts.Email, opts.Password)
-				if err != nil {
-					return err
-				}
-				opts.URL = creds.URL
-				opts.Email = creds.Email
-				opts.Password = creds.Password
-			}
-
-			resolved, err := config.ResolveInstallConfig(config.InstallConfigInput{
-				Client:    opts.Client,
-				Uninstall: opts.Uninstall,
-				Binary:    opts.Binary,
-				URL:       opts.URL,
-				Email:     opts.Email,
-				Password:  opts.Password,
-				TimeoutMS: opts.TimeoutMS,
-			})
-			if err != nil {
-				return err
-			}
-
-			fmt.Fprintf(cmd.OutOrStdout(), "setup config valid: client=%s uninstall=%t binary=%s timeout_ms=%d\n",
-				resolved.Client,
-				resolved.Uninstall,
-				valueOrDefault(resolved.Binary, "<auto>"),
-				resolved.TimeoutMS,
-			)
-			if !resolved.Uninstall {
-				fmt.Fprintf(cmd.OutOrStdout(), "setup auth: url=%s email=%s password=%s\n",
-					resolved.URL,
-					resolved.Email,
-					config.RedactedPassword(resolved.Password),
-				)
-			}
-			fmt.Fprintf(cmd.OutOrStdout(), "targets: %s\n", strings.Join(resolved.TargetClients(), ", "))
-			fmt.Fprintln(cmd.OutOrStdout(), "next: implement client config path resolution and JSON patch/write logic")
-			return nil
+			return runSetup(cmd, &opts)
 		},
 	}
 
-	cmd.Flags().StringVar(&opts.Client, "client", "all", "Target client: all|claude-desktop|cursor|vscode|windsurf|opencode")
+	cmd.Flags().StringVar(&opts.Client, "client", "all", "Target client: all|claude-code|claude-desktop|codex|cursor|gemini|opencode|vscode|windsurf")
 	cmd.Flags().BoolVar(&opts.Uninstall, "uninstall", false, "Remove existing entry instead of installing")
-	cmd.Flags().StringVar(&opts.Binary, "binary", "", "Path to compiled CLI binary")
 	cmd.Flags().StringVar(&opts.URL, "url", "", "PocketBase URL")
 	cmd.Flags().StringVar(&opts.Email, "email", "", "PocketBase user email")
 	cmd.Flags().StringVar(&opts.Email, "user", "", "Alias for --email")
@@ -78,6 +39,88 @@ func newSetupCmd() *cobra.Command {
 	cmd.Flags().IntVar(&opts.TimeoutMS, "timeout-ms", 0, "Request timeout in milliseconds")
 
 	return cmd
+}
+
+func newUninstallCmd() *cobra.Command {
+	opts := installOptions{Uninstall: true}
+
+	cmd := &cobra.Command{
+		Use:   "uninstall",
+		Short: "Remove MCP client configuration",
+		Long:  "Remove MCP client configuration that points at the global pocketmcp binary.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runSetup(cmd, &opts)
+		},
+	}
+
+	cmd.Flags().StringVar(&opts.Client, "client", "all", "Target client: all|claude-code|claude-desktop|codex|cursor|gemini|opencode|vscode|windsurf")
+	cmd.Flags().IntVar(&opts.TimeoutMS, "timeout-ms", 0, "Request timeout in milliseconds")
+
+	return cmd
+}
+
+func runSetup(cmd *cobra.Command, opts *installOptions) error {
+	selectedClients := parseClientSelection(opts.Client)
+
+	if !opts.Uninstall {
+		creds, err := promptPocketBaseCredentials(cmd, opts.URL, opts.Email, opts.Password)
+		if err != nil {
+			return err
+		}
+		opts.URL = creds.URL
+		opts.Email = creds.Email
+		opts.Password = creds.Password
+	}
+	if canPrompt() {
+		clients, err := promptSetupClients(opts.Client)
+		if err != nil {
+			return err
+		}
+		selectedClients = clients
+	}
+
+	resolved, err := config.ResolveInstallConfig(config.InstallConfigInput{
+		Client:    opts.Client,
+		Clients:   selectedClients,
+		Uninstall: opts.Uninstall,
+		URL:       opts.URL,
+		Email:     opts.Email,
+		Password:  opts.Password,
+		TimeoutMS: opts.TimeoutMS,
+	})
+	if err != nil {
+		return err
+	}
+
+	results, err := installer.Apply(resolved)
+	if err != nil {
+		return err
+	}
+
+	action := "installed"
+	if resolved.Uninstall {
+		action = "removed"
+	}
+
+	fmt.Fprintf(cmd.OutOrStdout(), "%s %s: client=%s binary=%s timeout_ms=%d\n",
+		cmd.Name(),
+		action,
+		resolved.Client,
+		valueOrDefault(installer.GlobalMCPBinary, "<auto>"),
+		resolved.TimeoutMS,
+	)
+	if !resolved.Uninstall {
+		fmt.Fprintf(cmd.OutOrStdout(), "setup auth: url=%s email=%s password=%s\n",
+			resolved.URL,
+			resolved.Email,
+			config.RedactedPassword(resolved.Password),
+		)
+	}
+	fmt.Fprintf(cmd.OutOrStdout(), "targets: %s\n", strings.Join(resolved.TargetClients(), ", "))
+	for _, result := range results {
+		fmt.Fprintf(cmd.OutOrStdout(), "%s %s -> %s\n", result.Action, result.Client, result.Path)
+	}
+	return nil
 }
 
 func valueOrDefault(value string, fallback string) string {

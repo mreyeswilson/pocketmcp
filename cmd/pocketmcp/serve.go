@@ -1,10 +1,15 @@
 package pocketmcp
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/mreyeswilson/pocketmcp/internal/config"
+	"github.com/mreyeswilson/pocketmcp/internal/mcpserver"
+	"github.com/mreyeswilson/pocketmcp/internal/pocketbase"
 	"github.com/spf13/cobra"
+	"time"
 )
 
 type serveOptions struct {
@@ -19,16 +24,18 @@ func newMCPCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "mcp",
-		Short: "Validate and prepare the MCP stdio server",
-		Long:  "Validate PocketBase MCP stdio server configuration and environment fallback before startup.",
+		Short: "Run the PocketBase MCP stdio server",
+		Long:  "Start an MCP stdio server authenticated as PocketBase superuser for collections, records, and settings administration.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			creds, err := promptPocketBaseCredentials(cmd, opts.URL, opts.Email, opts.Password)
-			if err != nil {
-				return err
+			if canPrompt() {
+				creds, err := promptPocketBaseCredentials(cmd, opts.URL, opts.Email, opts.Password)
+				if err != nil {
+					return err
+				}
+				opts.URL = creds.URL
+				opts.Email = creds.Email
+				opts.Password = creds.Password
 			}
-			opts.URL = creds.URL
-			opts.Email = creds.Email
-			opts.Password = creds.Password
 
 			resolved, err := config.ResolveServeConfig(config.ServeConfigInput{
 				URL:       opts.URL,
@@ -40,14 +47,20 @@ func newMCPCmd() *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintf(cmd.OutOrStdout(), "mcp config valid: url=%s email=%s timeout_ms=%d password=%s\n",
+			pb := pocketbase.NewClient(
+				resolved.URL,
+				resolved.Email,
+				resolved.Password,
+				time.Duration(resolved.TimeoutMS)*time.Millisecond,
+			)
+			server := mcpserver.New(pb, version)
+			fmt.Fprintf(cmd.ErrOrStderr(), "PocketBase MCP server running: url=%s email=%s timeout_ms=%d version=%s\n",
 				resolved.URL,
 				resolved.Email,
 				resolved.TimeoutMS,
-				config.RedactedPassword(resolved.Password),
+				version,
 			)
-			fmt.Fprintln(cmd.OutOrStdout(), "next: implement PocketBase auth, MCP tool registry, and stdio transport wiring")
-			return nil
+			return server.Run(context.Background(), &mcp.StdioTransport{})
 		},
 	}
 

@@ -5,6 +5,73 @@ REPO="${MCP_PB_REPO:-mreyeswilson/pocketmcp}"
 BINARY_NAME="pocketmcp"
 VERSION_INPUT="${1:-${VERSION:-${MCP_PB_VERSION:-}}}"
 
+ensure_path_in_shell_profile() {
+  local profile_path="$1"
+  local export_line="export PATH=\"${INSTALL_DIR}:\$PATH\""
+
+  touch "${profile_path}"
+  if grep -Fqs "${export_line}" "${profile_path}"; then
+    return
+  fi
+
+  {
+    printf '\n# Added by pocketmcp installer\n'
+    printf '%s\n' "${export_line}"
+  } >> "${profile_path}"
+}
+
+ensure_install_dir_on_path() {
+  case ":${PATH}:" in
+    *":${INSTALL_DIR}:"*)
+      echo "${INSTALL_DIR} is already available in PATH for this session."
+      return
+      ;;
+  esac
+
+  local shell_name profile_path
+  shell_name="$(basename "${SHELL:-}")"
+
+  case "${shell_name}" in
+    bash)
+      if [[ "${OS}" == darwin* ]]; then
+        profile_path="${HOME}/.bash_profile"
+      else
+        profile_path="${HOME}/.bashrc"
+      fi
+      ;;
+    zsh)
+      profile_path="${HOME}/.zshrc"
+      ;;
+    fish)
+      profile_path="${HOME}/.config/fish/config.fish"
+      mkdir -p "$(dirname "${profile_path}")"
+      touch "${profile_path}"
+      if grep -Fqs "${INSTALL_DIR}" "${profile_path}"; then
+        :
+      else
+        {
+          printf '\n# Added by pocketmcp installer\n'
+          printf 'fish_add_path "%s"\n' "${INSTALL_DIR}"
+        } >> "${profile_path}"
+      fi
+      export PATH="${INSTALL_DIR}:${PATH}"
+      echo "Added ${INSTALL_DIR} to PATH in ${profile_path}"
+      return
+      ;;
+    *)
+      if [[ "${OS}" == darwin* ]]; then
+        profile_path="${HOME}/.zprofile"
+      else
+        profile_path="${HOME}/.profile"
+      fi
+      ;;
+  esac
+
+  ensure_path_in_shell_profile "${profile_path}"
+  export PATH="${INSTALL_DIR}:${PATH}"
+  echo "Added ${INSTALL_DIR} to PATH in ${profile_path}"
+}
+
 resolve_latest_tag() {
   local latest_tag
 
@@ -52,7 +119,7 @@ esac
 
 case "${OS}" in
   linux*) ASSET="${BINARY_NAME}" ;;
-  darwin*) ASSET="${BINARY_NAME}-macos" ;;
+  darwin*) ASSET="${BINARY_NAME}" ;;
   *)
     echo "Unsupported OS: ${OS}. Supported: Linux/macOS." >&2
     exit 1
@@ -73,10 +140,11 @@ curl -fL "${URL}" -o "${TMP_FILE}"
 DEST="${INSTALL_DIR}/${BINARY_NAME}"
 mv "${TMP_FILE}" "${DEST}"
 chmod +x "${DEST}"
+ensure_install_dir_on_path
 
 echo "Installed ${BINARY_NAME} ${TAG} to ${DEST}"
 echo "Next steps:"
-echo "  1) Ensure ${INSTALL_DIR} is in your PATH"
+echo "  1) Open a new shell if your current session doesn't see ${INSTALL_DIR} in PATH yet"
 echo "  2) Run: ${BINARY_NAME} mcp --url <url> --email <email> --password <password>"
 echo "  3) Or run: ${BINARY_NAME} setup --client all --url <url> --email <email> --password <password>"
 echo "Version selection: latest by default; set VERSION (or MCP_PB_VERSION) or pass the tag as first argument."

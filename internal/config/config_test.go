@@ -39,7 +39,7 @@ func TestResolveInstallConfigForUninstallDoesNotRequireCredentials(t *testing.T)
 	if !resolved.Uninstall {
 		t.Fatal("expected uninstall to be true")
 	}
-	if len(resolved.TargetClients()) != 4 {
+	if len(resolved.TargetClients()) != 7 {
 		t.Fatalf("unexpected targets: %v", resolved.TargetClients())
 	}
 }
@@ -59,6 +59,29 @@ func TestResolveInstallConfigNormalizesClientName(t *testing.T) {
 
 	if resolved.Client != "windsurf" {
 		t.Fatalf("unexpected normalized client: %s", resolved.Client)
+	}
+}
+
+func TestResolveInstallConfigSupportsCodex(t *testing.T) {
+	resolved, err := ResolveInstallConfig(InstallConfigInput{Client: "Codex", Uninstall: true})
+	if err != nil {
+		t.Fatalf("ResolveInstallConfig returned error: %v", err)
+	}
+
+	if resolved.Client != "codex" {
+		t.Fatalf("unexpected normalized client: %s", resolved.Client)
+	}
+}
+
+func TestResolveInstallConfigSupportsMultipleClients(t *testing.T) {
+	resolved, err := ResolveInstallConfig(InstallConfigInput{Clients: []string{"codex", "gemini"}, Uninstall: true})
+	if err != nil {
+		t.Fatalf("ResolveInstallConfig returned error: %v", err)
+	}
+
+	targets := resolved.TargetClients()
+	if len(targets) != 2 || targets[0] != "codex" || targets[1] != "gemini" {
+		t.Fatalf("unexpected targets: %v", targets)
 	}
 }
 

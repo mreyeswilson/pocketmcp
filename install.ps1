@@ -93,6 +93,47 @@ function Get-LatestTag {
   return $null
 }
 
+function Ensure-UserPathContains {
+  param(
+    [Parameter(Mandatory = $true)] [string] $PathEntry
+  )
+
+  $currentUserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+  $segments = @()
+  if (-not [string]::IsNullOrWhiteSpace($currentUserPath)) {
+    $segments = $currentUserPath.Split(';') | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+  }
+
+  $normalizedEntry = [IO.Path]::GetFullPath($PathEntry).TrimEnd('\')
+  foreach ($segment in $segments) {
+    try {
+      $normalizedSegment = [IO.Path]::GetFullPath($segment).TrimEnd('\')
+    } catch {
+      $normalizedSegment = $segment.TrimEnd('\')
+    }
+
+    if ($normalizedSegment.Equals($normalizedEntry, [System.StringComparison]::OrdinalIgnoreCase)) {
+      if ($env:Path -notlike "*$PathEntry*") {
+        $env:Path = "$PathEntry;$env:Path"
+      }
+      Write-Host "$PathEntry is already available in the user PATH."
+      return
+    }
+  }
+
+  $newUserPath = if ([string]::IsNullOrWhiteSpace($currentUserPath)) {
+    $PathEntry
+  } else {
+    "$currentUserPath;$PathEntry"
+  }
+
+  [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+  if ($env:Path -notlike "*$PathEntry*") {
+    $env:Path = "$PathEntry;$env:Path"
+  }
+  Write-Host "Added $PathEntry to the user PATH."
+}
+
 if ($Version) {
   $Tag = $Version
 } elseif ($env:VERSION) {
@@ -124,10 +165,11 @@ $TempFile = Join-Path $env:TEMP ("$BinaryBaseName-" + [Guid]::NewGuid().ToString
 Write-Host "Downloading $Url"
 Download-WithRetry -Url $Url -OutFile $TempFile -MaxAttempts 3
 Move-Item -Force -Path $TempFile -Destination $Destination
+Ensure-UserPathContains -PathEntry $InstallDir
 
 Write-Host "Installed $BinaryFileName $Tag to $Destination"
 Write-Host "Next steps:"
-Write-Host "  1) Add $InstallDir to your PATH if needed"
+Write-Host "  1) Open a new terminal if the current session doesn't resolve $BinaryBaseName yet"
 Write-Host "  2) Run: $BinaryFileName mcp --url <url> --email <email> --password <password>"
 Write-Host "  3) Or run: $BinaryFileName setup --client all --url <url> --email <email> --password <password>"
 Write-Host "Version selection: latest by default; set VERSION (or MCP_PB_VERSION) or pass -Version <tag>."

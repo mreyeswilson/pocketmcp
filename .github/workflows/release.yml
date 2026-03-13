@@ -21,7 +21,7 @@ jobs:
             runs_on: ubuntu-latest
           - goos: darwin
             goarch: amd64
-            asset_name: pocketmcp-macos
+            asset_name: pocketmcp
             runs_on: ubuntu-latest
           - goos: windows
             goarch: amd64

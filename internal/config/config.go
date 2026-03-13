@@ -11,11 +11,14 @@ const DefaultTimeoutMS = 15000
 
 var supportedClients = map[string]struct{}{
 	"all":            {},
+	"claude-code":    {},
 	"claude-desktop": {},
+	"codex":          {},
 	"cursor":         {},
+	"gemini":         {},
+	"opencode":       {},
 	"vscode":         {},
 	"windsurf":       {},
-	"opencode":       {},
 }
 
 type ServeConfigInput struct {
@@ -34,8 +37,8 @@ type ServeConfig struct {
 
 type InstallConfigInput struct {
 	Client    string
+	Clients   []string
 	Uninstall bool
-	Binary    string
 	URL       string
 	Email     string
 	Password  string
@@ -44,8 +47,8 @@ type InstallConfigInput struct {
 
 type InstallConfig struct {
 	Client    string
+	Clients   []string
 	Uninstall bool
-	Binary    string
 	URL       string
 	Email     string
 	Password  string
@@ -84,8 +87,8 @@ func ResolveServeConfig(input ServeConfigInput) (ServeConfig, error) {
 }
 
 func ResolveInstallConfig(input InstallConfigInput) (InstallConfig, error) {
-	client := normalizeClient(firstNonEmpty(input.Client, "all"))
-	if err := validateClient(client); err != nil {
+	clients, err := resolveClients(input.Clients, input.Client)
+	if err != nil {
 		return InstallConfig{}, err
 	}
 
@@ -95,9 +98,9 @@ func ResolveInstallConfig(input InstallConfigInput) (InstallConfig, error) {
 	}
 
 	resolved := InstallConfig{
-		Client:    client,
+		Client:    strings.Join(clients, ","),
+		Clients:   clients,
 		Uninstall: input.Uninstall,
-		Binary:    strings.TrimSpace(input.Binary),
 		TimeoutMS: timeoutMS,
 	}
 
@@ -124,10 +127,56 @@ func ResolveInstallConfig(input InstallConfigInput) (InstallConfig, error) {
 }
 
 func (c InstallConfig) TargetClients() []string {
+	if len(c.Clients) > 0 {
+		return append([]string(nil), c.Clients...)
+	}
 	if c.Client == "all" {
-		return []string{"claude-desktop", "cursor", "vscode", "windsurf"}
+		return defaultInstallClients()
 	}
 	return []string{c.Client}
+}
+
+func resolveClients(explicitClients []string, rawClient string) ([]string, error) {
+	candidates := explicitClients
+	if len(candidates) == 0 {
+		candidates = strings.Split(firstNonEmpty(rawClient, "all"), ",")
+	}
+
+	seen := map[string]struct{}{}
+	resolved := make([]string, 0, len(candidates))
+	for _, candidate := range candidates {
+		client := normalizeClient(candidate)
+		if client == "" {
+			continue
+		}
+		if client == "all" {
+			for _, defaultClient := range defaultInstallClients() {
+				if _, ok := seen[defaultClient]; ok {
+					continue
+				}
+				seen[defaultClient] = struct{}{}
+				resolved = append(resolved, defaultClient)
+			}
+			continue
+		}
+		if err := validateClient(client); err != nil {
+			return nil, err
+		}
+		if _, ok := seen[client]; ok {
+			continue
+		}
+		seen[client] = struct{}{}
+		resolved = append(resolved, client)
+	}
+
+	if len(resolved) == 0 {
+		return nil, errors.New("at least one client must be selected")
+	}
+	return resolved, nil
+}
+
+func defaultInstallClients() []string {
+	return []string{"claude-code", "codex", "cursor", "gemini", "opencode", "vscode", "windsurf"}
 }
 
 func RedactedPassword(password string) string {

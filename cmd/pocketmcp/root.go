@@ -17,5 +17,6 @@ func Execute() error {
 func init() {
 	rootCmd.AddCommand(newMCPCmd())
 	rootCmd.AddCommand(newSetupCmd())
+	rootCmd.AddCommand(newUninstallCmd())
 	rootCmd.AddCommand(newVersionCmd())
 }
