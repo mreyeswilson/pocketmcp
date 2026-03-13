@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
-$Repo = if ($env:MCP_PB_REPO) { $env:MCP_PB_REPO } else { "wil/mcp-pb" }
-$BinaryName = "mcp-pocketbase-admin"
+$Repo = if ($env:MCP_PB_REPO) { $env:MCP_PB_REPO } else { "mreyeswilson/pocketmcp" }
+$BinaryName = "pocketmcp"
 
 if ($env:MCP_PB_VERSION) {
   $Tag = $env:MCP_PB_VERSION

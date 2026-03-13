@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="${MCP_PB_REPO}"
+REPO="${MCP_PB_REPO:-'mreyeswilson/pocketmcp'}"
 BINARY_NAME="pocketmcp"
 
 if [[ -n "${MCP_PB_VERSION:-}" ]]; then
