@@ -37,11 +37,7 @@ jobs:
           ASSET_NAME: ${{ matrix.asset_name }}
         run: |
           mkdir -p dist
-          deno compile \
-            --allow-env \
-            --allow-net \
-            --allow-read \
-            --allow-write \
+          deno compile -A \
             --target "${TARGET}" \
             --output "dist/${ASSET_NAME}" \
             src/cli.ts
