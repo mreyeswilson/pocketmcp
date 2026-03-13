@@ -18,6 +18,12 @@ Nombres finales de binario instalado:
 - Linux/macOS: `pocketmcp`
 - Windows: `pocketmcp.exe`
 
+Assets publicados en cada release:
+
+- Linux: `pocketmcp`
+- macOS: `pocketmcp-macos`
+- Windows: `pocketmcp.exe`
+
 ### 1) Instalar ultima version disponible (latest)
 
 ```bash
@@ -124,8 +130,8 @@ deno compile --allow-env --allow-net --allow-read --allow-write --output ./dist/
 
 Al pushear un tag `v*` (por ejemplo `v0.2.0`) se ejecuta `.github/workflows/release.yml` para:
 
-- Compilar binarios para `x86_64-unknown-linux-gnu`, `x86_64-apple-darwin`, `x86_64-pc-windows-msvc`
-- Publicar release con assets versionados por tag
+- Compilar binarios para Linux, macOS y Windows
+- Publicar exactamente estos assets finales: `pocketmcp`, `pocketmcp-macos`, `pocketmcp.exe`
 
 ## Landing docs
 

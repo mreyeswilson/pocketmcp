@@ -112,8 +112,7 @@ if ($Arch -notin @("AMD64", "x86_64")) {
   throw "Unsupported architecture: $Arch. Supported: x86_64."
 }
 
-$Target = "x86_64-pc-windows-msvc"
-$Asset = "$BinaryBaseName-$Tag-$Target.exe"
+$Asset = $BinaryFileName
 $Url = "https://github.com/$Repo/releases/download/$Tag/$Asset"
 
 $InstallDir = Join-Path $env:LOCALAPPDATA "pocketmcp\bin"

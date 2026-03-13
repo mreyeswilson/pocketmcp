@@ -51,15 +51,14 @@ case "${ARCH}" in
 esac
 
 case "${OS}" in
-  linux*) TARGET="x86_64-unknown-linux-gnu" ;;
-  darwin*) TARGET="x86_64-apple-darwin" ;;
+  linux*) ASSET="${BINARY_NAME}" ;;
+  darwin*) ASSET="${BINARY_NAME}-macos" ;;
   *)
     echo "Unsupported OS: ${OS}. Supported: Linux/macOS." >&2
     exit 1
     ;;
 esac
 
-ASSET="${BINARY_NAME}-${TAG}-${TARGET}"
 URL="https://github.com/${REPO}/releases/download/${TAG}/${ASSET}"
 
 INSTALL_DIR="${HOME}/.local/bin"
