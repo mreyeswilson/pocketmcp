@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="${MCP_PB_REPO:-wil/mcp-pb}"
-BINARY_NAME="mcp-pocketbase-admin"
+REPO="${MCP_PB_REPO}"
+BINARY_NAME="pocketmcp"
 
 if [[ -n "${MCP_PB_VERSION:-}" ]]; then
   TAG="${MCP_PB_VERSION}"
