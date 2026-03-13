@@ -119,7 +119,7 @@ esac
 
 case "${OS}" in
   linux*) ASSET="${BINARY_NAME}" ;;
-  darwin*) ASSET="${BINARY_NAME}" ;;
+  darwin*) ASSET="${BINARY_NAME}-macos" ;;
   *)
     echo "Unsupported OS: ${OS}. Supported: Linux/macOS." >&2
     exit 1

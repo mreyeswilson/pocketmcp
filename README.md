@@ -26,7 +26,7 @@ go build ./...
 ## Release assets
 
 - `pocketmcp` for Linux
-- `pocketmcp` for macOS
+- `pocketmcp-macos` for macOS
 - `pocketmcp.exe` for Windows
 
 ## Compatibility notes
