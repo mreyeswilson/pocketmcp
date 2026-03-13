@@ -3,556 +3,304 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PocketMCP</title>
+    <title>PocketMCP | PocketBase MCP, shipped fast</title>
     <meta
       name="description"
-      content="PocketMCP is a focused CLI for running a PocketBase admin MCP server and installing client config in seconds."
+      content="PocketMCP is the focused CLI to serve PocketBase MCP and install client config with clear, repeatable commands."
     >
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap"
       rel="stylesheet"
     >
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              display: ["Sora", "ui-sans-serif", "sans-serif"],
+              sans: ["Space Grotesk", "ui-sans-serif", "sans-serif"],
+            },
+            colors: {
+              ink: "#090d16",
+              shell: "#101725",
+              mist: "#9fb2c8",
+              line: "rgba(180, 206, 235, 0.24)",
+              glow: "#7df0cf",
+              ember: "#ff9f5a",
+            },
+            boxShadow: {
+              halo: "0 24px 55px rgba(8, 11, 18, 0.56)",
+            },
+          },
+        },
+      };
+    </script>
     <style>
-      :root {
-        --bg: #0a1117;
-        --bg-soft: #13212d;
-        --surface: rgba(12, 24, 33, 0.76);
-        --surface-strong: rgba(8, 18, 25, 0.92);
-        --text: #ecf5f8;
-        --muted: #a7bcc6;
-        --line: rgba(166, 205, 214, 0.24);
-        --accent: #f2a35e;
-        --accent-strong: #dc7840;
-        --teal: #7dd6c8;
-        --focus: #ffe5b0;
-        --radius: 18px;
-        --shadow: 0 18px 40px rgba(2, 7, 10, 0.45);
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html,
       body {
-        margin: 0;
-        min-height: 100%;
-      }
-
-      body {
-        font-family: "Manrope", "Segoe UI", sans-serif;
-        color: var(--text);
-        line-height: 1.55;
         background:
-          radial-gradient(
-            900px 600px at 10% 0%,
-            rgba(108, 165, 182, 0.25),
-            transparent 55%
-          ),
-          radial-gradient(
-          700px 560px at 88% 4%,
-          rgba(242, 163, 94, 0.22),
-          transparent 58%
-        ),
-          linear-gradient(160deg, #0b1117 0%, #09131b 48%, #071018 100%);
-        overflow-x: hidden;
+          radial-gradient(1000px 520px at 12% -6%, rgba(125, 240, 207, 0.2), transparent 55%),
+          radial-gradient(760px 500px at 92% 2%, rgba(255, 159, 90, 0.2), transparent 58%),
+          linear-gradient(168deg, #080c14 0%, #0b1220 52%, #0a101a 100%);
       }
 
-      body::before,
-      body::after {
-        content: "";
-        position: fixed;
-        pointer-events: none;
-        inset: auto;
-        border-radius: 999px;
-        z-index: -1;
-        filter: blur(8px);
-        opacity: 0.5;
-        animation: float 20s ease-in-out infinite;
+      .surface {
+        background: linear-gradient(155deg, rgba(16, 23, 37, 0.88), rgba(12, 18, 29, 0.78));
       }
 
-      body::before {
-        width: 300px;
-        height: 300px;
-        top: 20vh;
-        left: -80px;
-        background: radial-gradient(
-          circle at 35% 35%,
-          rgba(125, 214, 200, 0.7),
-          rgba(125, 214, 200, 0)
-        );
-      }
-
-      body::after {
-        width: 380px;
-        height: 380px;
-        top: 48vh;
-        right: -140px;
-        background: radial-gradient(
-          circle at 50% 50%,
-          rgba(242, 163, 94, 0.55),
-          rgba(242, 163, 94, 0)
-        );
-        animation-delay: -10s;
-      }
-
-      .wrap {
-        width: min(1080px, 100% - 32px);
-        margin: 0 auto;
-        padding: 34px 0 72px;
-      }
-
-      .hero {
-        position: relative;
-        padding: 34px;
-        border-radius: calc(var(--radius) + 4px);
-        border: 1px solid var(--line);
-        background: linear-gradient(
-          125deg,
-          rgba(125, 214, 200, 0.12) 0%,
-          rgba(12, 24, 33, 0.88) 36%,
-          rgba(9, 18, 24, 0.94) 100%
-        );
-        box-shadow: var(--shadow);
-        overflow: clip;
-      }
-
-      .hero::after {
-        content: "";
-        position: absolute;
-        inset: auto -10% -60% auto;
-        width: 340px;
-        height: 340px;
-        border-radius: 40px;
-        background: linear-gradient(
-          140deg,
-          rgba(242, 163, 94, 0.35),
-          rgba(242, 163, 94, 0)
-        );
-        transform: rotate(-12deg);
-        pointer-events: none;
-      }
-
-      .pill {
-        display: inline-block;
-        margin-bottom: 12px;
-        padding: 6px 12px;
-        border-radius: 999px;
-        border: 1px solid rgba(125, 214, 200, 0.45);
-        background: rgba(125, 214, 200, 0.16);
-        color: #d7faf4;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: clamp(2rem, 5.5vw, 3.2rem);
-        line-height: 1.05;
-        letter-spacing: -0.03em;
-        max-width: 13ch;
-      }
-
-      .lead {
-        margin-top: 14px;
-        margin-bottom: 0;
-        color: var(--muted);
-        max-width: 62ch;
-        font-size: clamp(1rem, 1.7vw, 1.12rem);
-      }
-
-      .value-row {
-        margin-top: 20px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .value-chip {
-        border: 1px solid rgba(167, 188, 198, 0.3);
-        border-radius: 999px;
-        padding: 6px 12px;
-        color: #dbe9ee;
-        background: rgba(11, 20, 28, 0.55);
-        font-size: 13px;
-      }
-
-      .layout {
-        margin-top: 20px;
-        display: grid;
-        gap: 16px;
-        grid-template-columns: repeat(12, minmax(0, 1fr));
-      }
-
-      .card {
-        position: relative;
-        border-radius: var(--radius);
-        border: 1px solid var(--line);
-        background: var(--surface);
-        box-shadow: var(--shadow);
-        padding: 18px;
-        backdrop-filter: blur(6px);
-        animation: rise 540ms cubic-bezier(0.22, 1, 0.36, 1) both;
-      }
-
-      .card:nth-child(2) {
-        animation-delay: 70ms;
-      }
-      .card:nth-child(3) {
-        animation-delay: 140ms;
-      }
-      .card:nth-child(4) {
-        animation-delay: 210ms;
-      }
-
-      .install {
-        grid-column: span 6;
-      }
-
-      .usage {
-        grid-column: span 6;
-      }
-
-      .meta {
-        grid-column: span 12;
-        background: var(--surface-strong);
-        display: grid;
-        gap: 14px;
-        grid-template-columns: 1fr 1fr;
-      }
-
-      h2,
-      h3 {
-        margin: 0 0 10px;
-        line-height: 1.2;
-        letter-spacing: -0.02em;
-      }
-
-      h2 {
-        font-size: 1.22rem;
-      }
-
-      h3 {
-        font-size: 1rem;
-        color: #cae9f1;
-      }
-
-      .subtle {
-        margin: 0 0 14px;
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
-
-      .cmd {
-        margin: 0;
-        padding: 12px 44px 12px 12px;
-        border: 1px solid rgba(173, 206, 216, 0.26);
-        border-radius: 12px;
-        background: #09141d;
-        color: #ebf3f9;
-        font-family: "IBM Plex Mono", Consolas, monospace;
-        font-size: 0.84rem;
-        line-height: 1.55;
-        overflow-x: auto;
-      }
-
-      .cmd-wrap {
-        position: relative;
-        margin-bottom: 12px;
-      }
-
-      .copy-btn {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        border: 1px solid rgba(242, 163, 94, 0.6);
-        border-radius: 9px;
-        padding: 5px 9px;
-        background: rgba(242, 163, 94, 0.17);
-        color: #ffe3cd;
-        font: 600 12px/1 "Manrope", "Segoe UI", sans-serif;
-        cursor: pointer;
-        transition: background-color 160ms ease, transform 160ms ease;
-      }
-
-      .copy-btn:hover {
-        background: rgba(242, 163, 94, 0.28);
-        transform: translateY(-1px);
-      }
-
-      .copy-btn:focus-visible,
-      a:focus-visible {
-        outline: 2px solid var(--focus);
-        outline-offset: 3px;
-      }
-
-      .list {
-        margin: 0;
-        padding-left: 18px;
-        color: var(--muted);
-      }
-
-      .list li + li {
-        margin-top: 6px;
-      }
-
-      .note {
-        margin: 0;
-        color: #e5f2f5;
-      }
-
-      .meta strong {
-        color: var(--teal);
-        font-weight: 700;
-      }
-
-      .meta a {
-        color: #ffd0ab;
-        text-underline-offset: 0.18em;
-      }
-
-      .status {
-        display: inline-block;
-        margin-top: 10px;
-        padding: 4px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(125, 214, 200, 0.35);
-        background: rgba(125, 214, 200, 0.12);
-        color: #d9f8f2;
-        font-size: 12px;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-
-      @media (max-width: 920px) {
-        .install,
-        .usage,
-        .meta {
-          grid-column: span 12;
-        }
-
-        .meta {
-          grid-template-columns: 1fr;
-        }
-
-        .hero {
-          padding: 24px;
-        }
-      }
-
-      @media (max-width: 560px) {
-        .wrap {
-          width: min(1080px, 100% - 20px);
-        }
-
-        .card {
-          padding: 14px;
-        }
-
-        .cmd {
-          font-size: 0.8rem;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-          animation-duration: 1ms !important;
-          animation-iteration-count: 1 !important;
-          transition-duration: 1ms !important;
-          scroll-behavior: auto !important;
-        }
-      }
-
-      @keyframes rise {
-        from {
-          opacity: 0;
-          transform: translateY(8px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes float {
-        0%,
-        100% {
-          transform: translate3d(0, 0, 0);
-        }
-        50% {
-          transform: translate3d(0, -14px, 0);
-        }
+      .grid-noise {
+        background-image:
+          linear-gradient(rgba(159, 178, 200, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(159, 178, 200, 0.05) 1px, transparent 1px);
+        background-size: 22px 22px;
       }
     </style>
   </head>
-  <body>
-    <main class="wrap">
-      <header class="hero" aria-labelledby="hero-title">
-        <span class="pill">PocketMCP CLI</span>
-        <h1 id="hero-title">Operate PocketBase MCP with speed and clarity.</h1>
-        <p class="lead">
-          PocketMCP gives you a focused interface to run an admin MCP server
-          over stdio and install client configuration in one practical flow. Use
-          it when you need predictable setup, quick onboarding, and less config
-          friction.
-        </p>
-        <div class="value-row" aria-label="Core value proposition">
-          <span class="value-chip">Single binary workflow</span>
-          <span class="value-chip">`serve` + `install` only</span>
-          <span class="value-chip">Cross-platform release assets</span>
-        </div>
+  <body class="font-sans text-slate-100 antialiased">
+    <div class="relative overflow-hidden">
+      <div class="pointer-events-none absolute inset-0 grid-noise opacity-40"></div>
+
+      <header class="relative mx-auto max-w-6xl px-5 pt-6 sm:px-8">
+        <nav class="surface rounded-2xl border border-line px-4 py-3 shadow-halo sm:px-6">
+          <div class="flex items-center justify-between gap-4">
+            <a href="#top" class="font-display text-lg font-bold tracking-tight text-slate-50">
+              PocketMCP
+            </a>
+            <ul class="flex items-center gap-2 text-sm text-mist sm:gap-6">
+              <li><a href="#features" class="transition hover:text-glow">Features</a></li>
+              <li><a href="#flow" class="transition hover:text-glow">Workflow</a></li>
+              <li><a href="#commands" class="transition hover:text-glow">Commands</a></li>
+            </ul>
+            <a
+              href="https://github.com/mreyeswilson/pocketmcp"
+              class="rounded-full border border-line bg-white/5 px-4 py-2 text-xs font-semibold text-slate-50 transition hover:border-glow/60 hover:bg-white/10 sm:text-sm"
+            >
+              View on GitHub
+            </a>
+          </div>
+        </nav>
       </header>
 
-      <section class="layout" aria-label="Installation and usage">
-        <article class="card install" aria-labelledby="install-title">
-          <h2 id="install-title">Install in one line</h2>
-          <p class="subtle">Pick your shell and copy instantly.</p>
+      <main id="top" class="relative mx-auto max-w-6xl px-5 pb-16 pt-10 sm:px-8 sm:pt-14">
+        <section class="max-w-3xl">
+          <div>
+            <p class="inline-flex rounded-full border border-glow/50 bg-glow/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-glow">
+              PocketBase MCP CLI
+            </p>
+            <h1 class="mt-4 max-w-xl font-display text-3xl font-extrabold leading-[1.04] tracking-tight text-slate-50 sm:text-5xl lg:text-[3.2rem]">
+              Run MCP in minutes, keep every client in sync.
+            </h1>
+            <p class="mt-5 max-w-xl text-base text-mist sm:text-[1.05rem]">
+              PocketMCP is the direct path to serve a PocketBase admin MCP endpoint over stdio and roll out config to your MCP clients with one clean install flow.
+            </p>
+            <div class="mt-7 flex flex-wrap items-center gap-3">
+              <a
+                href="#commands"
+                class="rounded-full bg-ember px-5 py-3 text-sm font-bold text-ink transition hover:bg-orange-300"
+              >
+                Get Started
+              </a>
+              <a
+                href="#flow"
+                class="rounded-full border border-line bg-white/5 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:border-glow/60 hover:text-glow"
+              >
+                See Workflow
+              </a>
+            </div>
+            <div class="mt-7 flex flex-wrap gap-3 text-xs text-mist sm:text-sm">
+              <span class="rounded-full border border-line bg-white/5 px-3 py-1">Cross-platform binaries</span>
+              <span class="rounded-full border border-line bg-white/5 px-3 py-1">Single-purpose commands</span>
+              <span class="rounded-full border border-line bg-white/5 px-3 py-1">Fast team onboarding</span>
+            </div>
 
-          <div class="cmd-wrap">
-            <button
-              class="copy-btn"
-              data-copy-target="install-bash"
-              aria-label="Copy bash install command"
-            >
-              Copy
-            </button>
-            <pre
-              class="cmd"
-            ><code id="install-bash">curl -fsSL https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install.sh | bash</code></pre>
+            <div class="mt-6 max-w-xl rounded-xl border border-line bg-black/30 p-3 sm:p-4">
+              <p class="text-sm font-semibold text-slate-50">Install PocketMCP</p>
+              <div
+                class="mt-2 inline-flex rounded-full border border-line bg-white/5 p-1"
+                role="tablist"
+                aria-label="Install command by platform"
+              >
+                <button
+                  id="install-tab-unix"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="install-panel-unix"
+                  data-install-tab="unix"
+                  class="install-tab-btn rounded-full px-3 py-1.5 text-xs font-semibold text-slate-900 bg-glow"
+                >
+                  Linux/macOS
+                </button>
+                <button
+                  id="install-tab-windows"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="install-panel-windows"
+                  data-install-tab="windows"
+                  class="install-tab-btn rounded-full px-3 py-1.5 text-xs font-semibold text-mist transition hover:text-slate-100"
+                >
+                  Windows
+                </button>
+              </div>
+              <div class="mt-2">
+                <div class="relative">
+                  <button
+                    type="button"
+                    data-install-copy
+                    aria-label="Copy install command"
+                    class="absolute right-2 top-2 z-10 rounded-md border border-line bg-ink/85 px-2 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-mist transition hover:border-glow/60 hover:text-slate-100"
+                  >
+                    Copy
+                  </button>
+                  <div id="install-panel-unix" role="tabpanel" aria-labelledby="install-tab-unix" data-install-panel="unix">
+                    <pre class="overflow-x-auto rounded-lg border border-glow/30 bg-black/50 px-3 py-2 pr-16 text-[0.82rem] leading-relaxed text-slate-100"><code>curl -fsSL https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install.sh | bash</code></pre>
+                  </div>
+                  <div id="install-panel-windows" role="tabpanel" aria-labelledby="install-tab-windows" data-install-panel="windows" hidden>
+                    <pre class="overflow-x-auto rounded-lg border border-glow/30 bg-black/50 px-3 py-2 pr-16 text-[0.82rem] leading-relaxed text-slate-100"><code>powershell -c "irm https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install.ps1 | iex"</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+        </section>
 
-          <div class="cmd-wrap">
-            <button
-              class="copy-btn"
-              data-copy-target="install-ps"
-              aria-label="Copy PowerShell install command"
-            >
-              Copy
-            </button>
-            <pre
-              class="cmd"
-            ><code id="install-ps">powershell -c "irm https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install.ps1 | iex"</code></pre>
+        <section id="features" class="mt-14 grid gap-4 md:grid-cols-3">
+          <article class="surface rounded-2xl border border-line p-5">
+            <h2 class="font-display text-xl font-bold tracking-tight">Focused command surface</h2>
+            <p class="mt-3 text-sm text-mist">Use dedicated `serve` and `install` commands designed for predictable MCP setup instead of generic script sprawl.</p>
+          </article>
+          <article class="surface rounded-2xl border border-line p-5">
+            <h2 class="font-display text-xl font-bold tracking-tight">Client config automation</h2>
+            <p class="mt-3 text-sm text-mist">Bootstrap MCP-compatible clients quickly with generated config that stays consistent across environments.</p>
+          </article>
+          <article class="surface rounded-2xl border border-line p-5">
+            <h2 class="font-display text-xl font-bold tracking-tight">Release-ready workflow</h2>
+            <p class="mt-3 text-sm text-mist">Ship reproducible installs from tagged releases so teams can pin versions and avoid drift.</p>
+          </article>
+        </section>
+
+        <section id="flow" class="mt-14 surface rounded-3xl border border-line p-6 sm:p-8">
+          <h2 class="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">Typical setup flow</h2>
+          <div class="mt-6 grid gap-4 md:grid-cols-3">
+            <div class="rounded-2xl border border-line bg-black/25 p-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ember">01</p>
+              <h3 class="mt-2 font-display text-lg font-bold">Install binary</h3>
+              <p class="mt-2 text-sm text-mist">Run the install script for your shell and keep PocketMCP available on your PATH.</p>
+            </div>
+            <div class="rounded-2xl border border-line bg-black/25 p-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ember">02</p>
+              <h3 class="mt-2 font-display text-lg font-bold">Run MCP server</h3>
+              <p class="mt-2 text-sm text-mist">Start an authenticated stdio MCP session against your PocketBase admin endpoint.</p>
+            </div>
+            <div class="rounded-2xl border border-line bg-black/25 p-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ember">03</p>
+              <h3 class="mt-2 font-display text-lg font-bold">Install client config</h3>
+              <p class="mt-2 text-sm text-mist">Apply generated settings for one or all supported clients to unify local tooling.</p>
+            </div>
           </div>
+        </section>
 
-          <span class="status" id="copy-status" role="status" aria-live="polite"
-          >Ready</span>
-        </article>
-
-        <article class="card usage" aria-labelledby="usage-title">
-          <h2 id="usage-title">Quick usage</h2>
-          <p class="subtle">
-            Core commands for local admin access and client config bootstrap.
-          </p>
-
-          <h3>Run MCP server with <code>serve</code></h3>
-          <pre
-            class="cmd"
-          >
-<code>pocketmcp serve \
+        <section id="commands" class="mt-14 grid gap-4 lg:grid-cols-2">
+          <article class="surface rounded-2xl border border-line p-5 sm:p-6">
+            <h2 class="font-display text-2xl font-bold tracking-tight">Core commands</h2>
+            <pre class="mt-4 overflow-x-auto rounded-xl border border-line bg-black/35 p-3 text-sm leading-relaxed text-slate-100"><code>pocketmcp serve \
   --url http://127.0.0.1:8090 \
   --email admin@example.com \
   --password 'your_password' \
-  --timeout-ms 15000</code></pre>
+  --timeout-ms 15000
 
-          <h3 style="margin-top: 14px">
-            Configure clients with <code>install</code>
-          </h3>
-          <pre
-            class="cmd"
-          >
-<code>pocketmcp install \
+pocketmcp install \
   --client all \
   --url http://127.0.0.1:8090 \
   --email admin@example.com \
   --password 'your_password'</code></pre>
-        </article>
-
-        <section class="card meta" aria-label="Platform and release details">
-          <div>
-            <h2>Platform support</h2>
-            <p class="note">
-              <strong>Targets:</strong> Linux, macOS, Windows (x86_64).
-            </p>
-            <ul class="list">
-              <li>Consistent CLI behavior across environments.</li>
-              <li>
-                Designed for MCP clients that expect stdio server execution.
-              </li>
+          </article>
+          <article class="surface rounded-2xl border border-line p-5 sm:p-6">
+            <h2 class="font-display text-2xl font-bold tracking-tight">When to use PocketMCP</h2>
+            <ul class="mt-4 space-y-3 text-sm text-mist">
+              <li class="rounded-xl border border-line bg-black/25 p-3">You need a repeatable admin MCP setup for local automation.</li>
+              <li class="rounded-xl border border-line bg-black/25 p-3">Your team wants one install flow for Linux, macOS, and Windows.</li>
+              <li class="rounded-xl border border-line bg-black/25 p-3">You want release-tagged binaries for stable CI and onboarding docs.</li>
             </ul>
-          </div>
-
-          <div>
-            <h2>Release flow</h2>
-            <p class="note">
-              Tags like <code>v0.2.0</code> trigger CI builds and publish
-              versioned binaries in GitHub Releases.
-            </p>
-            <ul class="list">
-              <li>
-                Use tagged versions in automation for reproducible setups.
-              </li>
-              <li>
-                Source, scripts, and binaries stay aligned in the same
-                repository.
-              </li>
-            </ul>
-          </div>
+          </article>
         </section>
-      </section>
-    </main>
+      </main>
 
+      <footer class="relative border-t border-line/70 bg-black/20">
+        <div class="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-sm text-mist sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <p>Built for practical PocketBase MCP operations.</p>
+          <a href="https://github.com/mreyeswilson/pocketmcp" class="font-semibold text-slate-100 transition hover:text-glow">
+            github.com/mreyeswilson/pocketmcp
+          </a>
+        </div>
+      </footer>
+    </div>
     <script>
       (function () {
-        var buttons = document.querySelectorAll("[data-copy-target]");
-        var status = document.getElementById("copy-status");
+        const tabButtons = Array.from(document.querySelectorAll("[data-install-tab]"));
+        const panels = Array.from(document.querySelectorAll("[data-install-panel]"));
+        const copyButton = document.querySelector("[data-install-copy]");
+        let copyResetTimeout;
 
-        function setStatus(message, isError) {
-          if (!status) {
-            return;
-          }
+        function setActiveTab(target) {
+          tabButtons.forEach((button) => {
+            const active = button.dataset.installTab === target;
+            button.setAttribute("aria-selected", String(active));
+            button.classList.toggle("bg-glow", active);
+            button.classList.toggle("text-slate-900", active);
+            button.classList.toggle("text-mist", !active);
+            button.classList.toggle("hover:text-slate-100", !active);
+          });
 
-          status.textContent = message;
-          status.style.borderColor = isError
-            ? "rgba(244, 139, 131, 0.55)"
-            : "rgba(125, 214, 200, 0.35)";
-          status.style.backgroundColor = isError
-            ? "rgba(244, 139, 131, 0.16)"
-            : "rgba(125, 214, 200, 0.12)";
-          status.style.color = isError ? "#ffe2dd" : "#d9f8f2";
+          panels.forEach((panel) => {
+            panel.hidden = panel.dataset.installPanel !== target;
+          });
         }
 
-        buttons.forEach(function (button) {
-          button.addEventListener("click", function () {
-            var targetId = button.getAttribute("data-copy-target");
-            var el = targetId
-              ? document.getElementById(targetId)
-              : null;
-            if (!el) {
-              setStatus("Command not found", true);
+        tabButtons.forEach((button) => {
+          button.addEventListener("click", () => setActiveTab(button.dataset.installTab));
+          button.addEventListener("keydown", (event) => {
+            if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
               return;
             }
 
-            var text = (el.textContent || "").trim();
-            if (!navigator.clipboard || !text) {
-              setStatus("Copy unavailable", true);
-              return;
-            }
-
-            navigator.clipboard.writeText(text)
-              .then(function () {
-                setStatus("Copied " + targetId, false);
-              })
-              .catch(function () {
-                setStatus("Clipboard blocked", true);
-              });
+            event.preventDefault();
+            const currentIndex = tabButtons.indexOf(button);
+            const direction = event.key === "ArrowRight" ? 1 : -1;
+            const nextIndex = (currentIndex + direction + tabButtons.length) % tabButtons.length;
+            const nextButton = tabButtons[nextIndex];
+            setActiveTab(nextButton.dataset.installTab);
+            nextButton.focus();
           });
         });
+
+        if (copyButton) {
+          copyButton.addEventListener("click", async () => {
+            const activePanel = panels.find((panel) => !panel.hidden);
+            const command = activePanel ? activePanel.querySelector("code")?.textContent?.trim() : "";
+
+            if (!command) {
+              return;
+            }
+
+            try {
+              await navigator.clipboard.writeText(command);
+            } catch (_error) {
+              return;
+            }
+
+            copyButton.textContent = "Copied";
+            clearTimeout(copyResetTimeout);
+            copyResetTimeout = setTimeout(() => {
+              copyButton.textContent = "Copy";
+            }, 1400);
+          });
+        }
+
+        setActiveTab("unix");
       })();
     </script>
   </body>

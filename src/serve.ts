@@ -403,7 +403,7 @@ export async function runServe(args: string[]): Promise<void> {
 
   const server = new Server(
     {
-      name: "mcp-pocketbase-admin",
+      name: "pocketmcp",
       version: "0.1.0",
     },
     {

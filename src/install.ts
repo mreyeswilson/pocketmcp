@@ -31,8 +31,8 @@ type ClientReport = {
 
 function usageText(): string {
   return `Usage:
-  mcp-pocketbase-admin install --client <all|claude-desktop|cursor|vscode|windsurf> [options]
-  mcp-pocketbase-admin install --uninstall --client <all|claude-desktop|cursor|vscode|windsurf>
+  pocketmcp install --client <all|claude-desktop|cursor|vscode|windsurf> [options]
+  pocketmcp install --uninstall --client <all|claude-desktop|cursor|vscode|windsurf>
 
 Install options:
   --url <url>
@@ -248,8 +248,8 @@ function getRepoRoot(): string {
 async function resolveDefaultBinaryPath(repoRoot: string): Promise<string | undefined> {
   const os = Deno.build.os;
   const candidates = [
-    join(repoRoot, "build", os === "windows" ? "pbmcp.exe" : "pbmcp"),
-    join(repoRoot, "dist", os === "windows" ? "mcp-pocketbase-admin.exe" : "mcp-pocketbase-admin"),
+    join(repoRoot, "build", os === "windows" ? "pocketmcp.exe" : "pocketmcp"),
+    join(repoRoot, "dist", os === "windows" ? "pocketmcp.exe" : "pocketmcp"),
   ];
 
   for (const candidate of candidates) {

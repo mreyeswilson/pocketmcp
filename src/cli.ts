@@ -6,7 +6,7 @@ function buildProgram(rawArgs: string[]): Command {
   const program = new Command();
 
   program
-    .name("mcp-pocketbase-admin")
+    .name("pocketmcp")
     .description("PocketBase MCP CLI")
     .showHelpAfterError("\nUse --help for usage details.")
     .helpCommand(true)

@@ -1,4 +1,4 @@
-# MCP PocketBase Admin CLI (Deno)
+# PocketMCP CLI (Deno)
 
 CLI para ejecutar un servidor MCP sobre `stdio` para PocketBase y para instalar/desinstalar su configuracion en clientes MCP.
 
@@ -11,14 +11,14 @@ Comandos principales del binario:
 
 ## Instalacion rapida
 
-Reemplaza `wil/mcp-pb` si usas un fork propio:
+Reemplaza `mreyeswilson/pocketmcp` si usas un fork propio:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/wil/mcp-pb/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install.sh | bash
 ```
 
 ```powershell
-powershell -c "irm https://raw.githubusercontent.com/wil/mcp-pb/main/install.ps1 | iex"
+powershell -c "irm https://raw.githubusercontent.com/mreyeswilson/pocketmcp/main/install.ps1 | iex"
 ```
 
 ## Requisitos (desarrollo)
@@ -101,7 +101,7 @@ deno task install -- --uninstall --client all
 ## Compilar a binario
 
 ```bash
-deno compile --allow-env --allow-net --allow-read --allow-write --output ./dist/mcp-pocketbase-admin src/cli.ts
+deno compile --allow-env --allow-net --allow-read --allow-write --output ./dist/pocketmcp src/cli.ts
 ```
 
 ## Releases en GitHub Actions

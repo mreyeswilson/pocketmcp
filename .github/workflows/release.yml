@@ -33,11 +33,12 @@ jobs:
 
       - name: Build binary
         env:
+          TAG: ${{ github.ref_name }}
           TARGET: ${{ matrix.target }}
           EXT: ${{ matrix.ext }}
         run: |
           mkdir -p dist
-          ASSET_NAME="pocketmcp-${TARGET}${EXT}"
+          ASSET_NAME="pocketmcp-${TAG}-${TARGET}${EXT}"
           deno compile \
             --allow-env \
             --allow-net \
